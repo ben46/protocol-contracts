@@ -52,7 +52,7 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
 
     function setParams(
         Params calldata p
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(ADMIN_ROLE) {
         _setParams(p);
     }
 
