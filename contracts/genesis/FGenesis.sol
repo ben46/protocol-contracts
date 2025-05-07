@@ -5,10 +5,8 @@ import {Genesis} from "./Genesis.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "../virtualPersona/AgentFactoryV3.sol";
 import "./GenesisTypes.sol";
 import "./GenesisLib.sol";
-import "../virtualPersona/AgentFactoryV3.sol";
 
 contract FGenesis is Initializable, AccessControlUpgradeable {
     using GenesisLib for *;
@@ -38,6 +36,8 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
 
     event GenesisCreated(uint256 indexed id, address indexed addr);
 
+    bytes32 public constant BONDING_ROLE = keccak256("BONDING_ROLE");
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -50,9 +50,7 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
         _setParams(p);
     }
 
-    function setParams(
-        Params calldata p
-    ) external onlyRole(ADMIN_ROLE) {
+    function setParams(Params calldata p) external onlyRole(ADMIN_ROLE) {
         _setParams(p);
     }
 
@@ -66,15 +64,13 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
         );
 
         require(
-            p.reserve > 0 &&
-                p.maxContribution > 0 &&
-                p.feeAmt > 0 &&
-                p.duration > 0,
+            p.reserve > 0 && p.maxContribution > 0 && p.feeAmt > 0,
             "Invalid amt"
         );
 
         require(
-            p.agentTokenTotalSupply > 0 &&
+            p.duration > 0 &&
+                p.agentTokenTotalSupply > 0 &&
                 p.agentTokenLpSupply > 0 &&
                 p.agentTokenTotalSupply >= p.agentTokenLpSupply,
             "Invalid amt"
@@ -96,7 +92,6 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
         );
 
         gParams.endTime = gParams.startTime + params.duration;
-
         genesisID++;
         address addr = GenesisLib.validateAndDeploy(
             genesisID,
@@ -114,10 +109,7 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
             params.agentTokenLpSupply
         );
 
-        // Grant BONDING_ROLE of ato the new Genesis contract
-        bytes32 BONDING_ROLE = AgentFactoryV3(params.agentFactory)
-            .BONDING_ROLE();
-        AgentFactoryV3(params.agentFactory).grantRole(
+        IAccessControl(params.agentFactory).grantRole(
             BONDING_ROLE,
             address(addr)
         );
@@ -144,6 +136,22 @@ contract FGenesis is Initializable, AccessControlUpgradeable {
                 p.distributeAddresses,
                 p.distributeAmounts,
                 p.creator
+            );
+    }
+
+    function onGenesisSuccessSalt(
+        uint256 id,
+        SuccessParams calldata p,
+        bytes32 salt
+    ) external onlyRole(OPERATION_ROLE) returns (address) {
+        return
+            _getGenesis(id).onGenesisSuccessSalt(
+                p.refundAddresses,
+                p.refundAmounts,
+                p.distributeAddresses,
+                p.distributeAmounts,
+                p.creator,
+                salt
             );
     }
 

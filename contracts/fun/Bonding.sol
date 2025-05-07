@@ -194,23 +194,13 @@ contract Bonding is
         string[4] memory urls,
         uint256 purchaseAmount
     ) public nonReentrant returns (address, address, uint) {
-        return launchFor(_name, _ticker, cores, desc, img, urls, purchaseAmount, msg.sender);
-    }
-
-    function launchFor(
-        string memory _name,
-        string memory _ticker,
-        uint8[] memory cores,
-        string memory desc,
-        string memory img,
-        string[4] memory urls,
-        uint256 purchaseAmount,
-        address creator
-    ) public nonReentrant returns (address, address, uint) {
         require(
             purchaseAmount > fee,
             "Purchase amount must be greater than fee"
         );
+
+        require(cores.length > 0, "Cores must be provided");
+
         address assetToken = router.assetToken();
         require(
             IERC20(assetToken).balanceOf(msg.sender) >= purchaseAmount,
@@ -224,7 +214,9 @@ contract Bonding is
             initialPurchase
         );
 
-        FERC20 token = new FERC20(string.concat("fun ", _name), _ticker, initialSupply, maxTx);
+        FERC20 token = new FERC20{
+            salt: keccak256(abi.encodePacked(msg.sender, block.timestamp))
+        }(string.concat("fun ", _name), _ticker, initialSupply, maxTx);
         uint256 supply = token.totalSupply();
 
         address _pair = factory.createPair(address(token), assetToken);
@@ -252,7 +244,7 @@ contract Bonding is
             lastUpdated: block.timestamp
         });
         Token memory tmpToken = Token({
-            creator: creator,
+            creator: msg.sender,
             token: address(token),
             agentToken: address(0),
             pair: _pair,
@@ -270,17 +262,17 @@ contract Bonding is
         tokenInfo[address(token)] = tmpToken;
         tokenInfos.push(address(token));
 
-        bool exists = _checkIfProfileExists(creator);
+        bool exists = _checkIfProfileExists(msg.sender);
 
         if (exists) {
-            Profile storage _profile = profile[creator];
+            Profile storage _profile = profile[msg.sender];
 
             _profile.tokens.push(address(token));
         } else {
-            bool created = _createUserProfile(creator);
+            bool created = _createUserProfile(msg.sender);
 
             if (created) {
-                Profile storage _profile = profile[creator];
+                Profile storage _profile = profile[msg.sender];
 
                 _profile.tokens.push(address(token));
             }
@@ -292,7 +284,13 @@ contract Bonding is
 
         // Make initial purchase
         IERC20(assetToken).forceApprove(address(router), initialPurchase);
-        router.buy(initialPurchase, address(token), address(this));
+        _buy(
+            address(this),
+            initialPurchase,
+            address(token),
+            0,
+            block.timestamp + 300
+        );
         token.transfer(msg.sender, token.balanceOf(address(this)));
 
         return (address(token), _pair, n);
@@ -300,9 +298,12 @@ contract Bonding is
 
     function sell(
         uint256 amountIn,
-        address tokenAddress
+        address tokenAddress,
+        uint256 amountOutMin,
+        uint256 deadline
     ) public returns (bool) {
         require(tokenInfo[tokenAddress].trading, "Token not trading");
+        require(block.timestamp <= deadline, "Deadline exceeded");
 
         address pairAddress = factory.getPair(
             tokenAddress,
@@ -318,6 +319,7 @@ contract Bonding is
             tokenAddress,
             msg.sender
         );
+        require(amount1Out >= amountOutMin, "Slippage too high");
 
         uint256 newReserveA = reserveA + amount0In;
         uint256 newReserveB = reserveB - amount1Out;
@@ -351,12 +353,14 @@ contract Bonding is
         return true;
     }
 
-    function buy(
+    function _buy(
+        address buyer,
         uint256 amountIn,
-        address tokenAddress
-    ) public payable returns (bool) {
-        require(tokenInfo[tokenAddress].trading, "Token not trading");
-
+        address tokenAddress,
+        uint256 amountOutMin,
+        uint256 deadline
+    ) internal {
+        require(block.timestamp <= deadline, "Deadline exceeded");
         address pairAddress = factory.getPair(
             tokenAddress,
             router.assetToken()
@@ -369,8 +373,10 @@ contract Bonding is
         (uint256 amount1In, uint256 amount0Out) = router.buy(
             amountIn,
             tokenAddress,
-            msg.sender
+            buyer
         );
+
+        require(amount0Out >= amountOutMin, "Slippage too high");
 
         uint256 newReserveA = reserveA - amount0Out;
         uint256 newReserveB = reserveB + amount1In;
@@ -404,6 +410,17 @@ contract Bonding is
         if (newReserveA <= gradThreshold && tokenInfo[tokenAddress].trading) {
             _openTradingOnUniswap(tokenAddress);
         }
+    }
+
+    function buy(
+        uint256 amountIn,
+        address tokenAddress,
+        uint256 amountOutMin,
+        uint256 deadline
+    ) public payable returns (bool) {
+        require(tokenInfo[tokenAddress].trading, "Token not trading");
+
+        _buy(msg.sender, amountIn, tokenAddress, amountOutMin, deadline);
 
         return true;
     }
@@ -448,11 +465,12 @@ contract Bonding is
         );
 
         address agentToken = IAgentFactoryV3(agentFactory)
-            .executeBondingCurveApplication(
+            .executeBondingCurveApplicationSalt(
                 id,
                 _token.data.supply / (10 ** token_.decimals()),
                 tokenBalance / (10 ** token_.decimals()),
-                pairAddress
+                pairAddress,
+                keccak256(abi.encodePacked(msg.sender, block.timestamp, tokenAddress))
             );
         _token.agentToken = agentToken;
 

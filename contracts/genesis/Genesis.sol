@@ -246,18 +246,6 @@ contract Genesis is ReentrancyGuard, AccessControlUpgradeable {
             "Exceeds maximum virtuals per contribution"
         );
 
-        // Add balance check
-        require(
-            IERC20(virtualTokenAddress).balanceOf(msg.sender) >= virtualsAmt,
-            "Insufficient Virtual Token balance"
-        );
-        // Add allowance check
-        require(
-            IERC20(virtualTokenAddress).allowance(msg.sender, address(this)) >=
-                virtualsAmt,
-            "Insufficient Virtual Token allowance"
-        );
-
         // Update participant list
         if (mapAddrToVirtuals[msg.sender] == 0) {
             participants.push(msg.sender);
@@ -286,23 +274,56 @@ contract Genesis is ReentrancyGuard, AccessControlUpgradeable {
         onlyRole(FACTORY_ROLE)
         nonReentrant
         whenNotCancelled
-        whenNotFailed
         whenEnded
         returns (address)
     {
+        return
+            _onGenesisSuccessSalt(
+                refundVirtualsTokenUserAddresses,
+                refundVirtualsTokenUserAmounts,
+                distributeAgentTokenUserAddresses,
+                distributeAgentTokenUserAmounts,
+                creator,
+                keccak256(abi.encodePacked(msg.sender, block.timestamp))
+            );
+    }
+
+    function onGenesisSuccessSalt(
+        address[] calldata refundVirtualsTokenUserAddresses,
+        uint256[] calldata refundVirtualsTokenUserAmounts,
+        address[] calldata distributeAgentTokenUserAddresses,
+        uint256[] calldata distributeAgentTokenUserAmounts,
+        address creator,
+        bytes32 salt
+    )
+        external
+        onlyRole(FACTORY_ROLE)
+        nonReentrant
+        whenNotCancelled
+        whenEnded
+        returns (address)
+    {
+        return _onGenesisSuccessSalt(
+            refundVirtualsTokenUserAddresses,
+            refundVirtualsTokenUserAmounts,
+            distributeAgentTokenUserAddresses,
+            distributeAgentTokenUserAmounts,
+            creator,
+            salt
+        );
+    }
+
+    function _onGenesisSuccessSalt(
+        address[] calldata refundVirtualsTokenUserAddresses,
+        uint256[] calldata refundVirtualsTokenUserAmounts,
+        address[] calldata distributeAgentTokenUserAddresses,
+        uint256[] calldata distributeAgentTokenUserAmounts,
+        address creator,
+        bytes32 salt
+    ) internal returns (address) {
         require(
             refundUserCountForFailed == 0,
             "OnGenesisFailed already called"
-        );
-        require(
-            refundVirtualsTokenUserAddresses.length ==
-                refundVirtualsTokenUserAmounts.length,
-            "Mismatched refund arrays"
-        );
-        require(
-            distributeAgentTokenUserAddresses.length ==
-                distributeAgentTokenUserAmounts.length,
-            "Mismatched distribution arrays"
         );
 
         // Calculate total refund amount
@@ -319,16 +340,6 @@ contract Genesis is ReentrancyGuard, AccessControlUpgradeable {
 
         // Check if launch has been called before
         bool isFirstLaunch = agentTokenAddress == address(0);
-        // Calculate required balance based on whether this is first launch
-        uint256 requiredVirtualsBalance = isFirstLaunch
-            ? totalRefundAmount + reserveAmount
-            : totalRefundAmount;
-        // Check if contract has enough virtuals balance
-        require(
-            IERC20(virtualTokenAddress).balanceOf(address(this)) >=
-                requiredVirtualsBalance,
-            "Insufficient Virtual Token balance"
-        );
 
         // Only do launch related operations if this is first launch
         if (isFirstLaunch) {
@@ -353,11 +364,12 @@ contract Genesis is ReentrancyGuard, AccessControlUpgradeable {
                 );
 
             address agentToken = IAgentFactoryV3(agentFactoryAddress)
-                .executeBondingCurveApplication(
+                .executeBondingCurveApplicationSalt(
                     id,
                     agentTokenTotalSupply,
                     agentTokenLpSupply,
-                    address(this) // vault
+                    address(this), // vault
+                    salt
                 );
 
             require(agentToken != address(0), "Agent token creation failed");
