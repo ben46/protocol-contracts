@@ -334,6 +334,11 @@
       "address": "0x10487fA3c217290a95F1bA70095817E63C065DCE",
       "txHash": "0xa9dcf1c16c8602236551847e8670805e80d6469e08fc0b8b1ea3ea905a155c30",
       "kind": "transparent"
+    },
+    {
+      "address": "0xBd95580796F509aE070E214EcB6371C5517164f5",
+      "txHash": "0xfafba6ca97042a7d0f8626f8abad027f8f56cadbfaf2327fdc602f26ab6f17bd",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -25004,6 +25009,195 @@
           "t_uint32": {
             "label": "uint32",
             "numberOfBytes": "4"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "52b2a11c1b7774489859a4cb606d5276ac4f0382fd5ada5623cfbf629ea7d370": {
+      "address": "0x8e44a51Fab0054A96b2b78e82f211AaED0654322",
+      "txHash": "0x8444a5afb8b3d65d97adeab4ab2b6eb50889f4832ffc2e156fcaff00c6e290f1",
+      "layout": {
+        "solcVersion": "0.8.26",
+        "storage": [
+          {
+            "label": "assetToken",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:21"
+          },
+          {
+            "label": "taxToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:22"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IRouter)2539",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:23"
+          },
+          {
+            "label": "bondingRouter",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:24"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:25"
+          },
+          {
+            "label": "minSwapThreshold",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:26"
+          },
+          {
+            "label": "maxSwapThreshold",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:27"
+          },
+          {
+            "label": "_slippage",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint16",
+            "contract": "BondingTax",
+            "src": "contracts/tax/BondingTax.sol:28"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)25_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)25_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)93_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)25_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(IRouter)2539": {
+            "label": "contract IRouter",
+            "numberOfBytes": "20"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
           }
         },
         "namespaces": {
