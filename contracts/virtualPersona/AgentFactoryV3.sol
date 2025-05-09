@@ -570,7 +570,7 @@ contract AgentFactoryV3 is
         uint256 totalSupply,
         uint256 lpSupply,
         address vault
-    ) public onlyRole(BONDING_ROLE) noReentrant returns (address) {
+    ) public onlyRole(BONDING_ROLE) returns (address) {
         return
             executeBondingCurveApplicationSalt(
                 id,
