@@ -253,7 +253,7 @@ contract VirtualProtocolDAOV2 is
     ) internal override(Governor) returns (uint256) {
         _validateStateBitmap2(proposalId, _encodeStateBitmap(ProposalState.Active));
 
-        uint256 weight = _getVotes(account, block.timestamp, params);
+        uint256 weight = _getVotes(account, proposalSnapshot(proposalId), params);
         _countVote(proposalId, account, support, weight, params);
 
         if (params.length == 0) {
