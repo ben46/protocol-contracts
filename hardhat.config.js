@@ -51,11 +51,11 @@ module.exports = {
         network: "base_sepolia",
         chainId: 84532,
         urls: {
-          apiURL: "https://api-sepolia.basescan.org/api",
-          browserURL: "https://sepolia.basescan.org/",
-        },
-      },
-    ],
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://sepolia.basescan.org/"
+        }
+      }
+    ]
   },
   networks: {
     base: {
@@ -73,23 +73,11 @@ module.exports = {
     },
     base_sepolia: {
       url: "https://sepolia.base.org",
-      accounts: [process.env.PRIVATE_KEY],
-      verify: {
-        etherscan: {
-          apiUrl: "https://api-sepolia.basescan.org",
-          apiKey: process.env.ETHERSCAN_API_KEY,
-        },
-      },
+      accounts: [process.env.PRIVATE_KEY]
     },
     base_sepolia_fire: {
       url: "https://sepolia.base.org",
       accounts: [process.env.PRIVATE_KEY],
-      verify: {
-        etherscan: {
-          apiUrl: "https://api-sepolia.basescan.org",
-          apiKey: process.env.ETHERSCAN_API_KEY,
-        },
-      },
       fireblocks: {
         apiBaseUrl: ApiBaseUrl.Sandbox,
         privateKey: process.env.FIREBLOCKS_API_PRIVATE_KEY_PATH,
